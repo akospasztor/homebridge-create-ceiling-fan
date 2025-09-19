@@ -74,6 +74,16 @@ the IP address is not supplied (connection requests with ID only).
 
 ### Installation
 
+Install the plugin either via the HomeBridge UI by going to the Plugins tab and
+searching for the plugin.
+
+Alternatively, the plugin can be installed directly from the command line
+interface:
+
+```shell
+hb-service add @akospasztor/homebridge-create-ceiling-fan
+```
+
 ### Configuration
 
 By default, one HomeKit tile is exposed in the Home application for a device.
