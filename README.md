@@ -5,9 +5,9 @@
 # Homebridge Create Ceiling Fan Plugin
 
 This plugin allows integrating the CREATE ceiling fans into HomeKit via
-HomeBridge.
+Homebridge.
 
-Although there are several HomeBridge plugins that provide similar
+Although there are several Homebridge plugins that provide similar
 functionality, this plugin aims to stand out via providing a smooth,
 user-friendly fan speed control mechanism in the HomeKit UI and a robust device
 communication mechanism with a mutex. It also reflects and updates the changes
@@ -74,7 +74,7 @@ the IP address is not supplied (connection requests with ID only).
 
 ### Installation
 
-Install the plugin either via the HomeBridge UI by going to the Plugins tab and
+Install the plugin either via the Homebridge UI by going to the Plugins tab and
 searching for the plugin.
 
 Alternatively, the plugin can be installed directly from the command line
