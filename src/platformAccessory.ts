@@ -491,7 +491,7 @@ export class CreateCeilingFanAccessory {
    *
    * This is a simple wrapper for the {@link setDeviceValue} method with a
    * timeout mechanism. If the method fails to execute within the
-   * {@link setDeviceStatusTimeout} timeout, it throws a HomeKit No Response
+   * {@link setDeviceStatusTimeout} value, it throws a HomeKit No Response
    * status.
    *
    * @param dps   The data point index of the device to be set.
