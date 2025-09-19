@@ -1,215 +1,151 @@
 <p align="center">
-
-<img src="https://github.com/homebridge/branding/raw/latest/logos/homebridge-wordmark-logo-vertical.png" width="150">
-
+  <img src="docs/homebridge-create-logo.png" alt="Homebridge Create Ceiling Fan Plugin Logo" width="450">
 </p>
 
-<span align="center">
+# Homebridge Create Ceiling Fan Plugin
 
-# Homebridge Platform Plugin Template
+This plugin allows integrating the CREATE ceiling fans into HomeKit via
+HomeBridge.
 
-</span>
+Although there are several HomeBridge plugins that provide similar
+functionality, this plugin aims to stand out via providing a smooth,
+user-friendly fan speed control mechanism in the HomeKit UI and a robust device
+communication mechanism with a mutex. It also reflects and updates the changes
+via the physical remote automatically in HomeKit.
 
-> [!IMPORTANT]
-> **Homebridge v2.0 Information**
->
-> This template currently has a
-> - `package.json -> engines.homebridge` value of `"^1.8.0 || ^2.0.0-beta.0"`
-> - `package.json -> devDependencies.homebridge` value of `"^2.0.0-beta.0"`
->
-> This is to ensure that your plugin will build and run on both Homebridge v1 and v2.
->
-> Once Homebridge v2.0 has been released, you can remove the `-beta.0` in both places.
+**Tested Devices:**
 
----
+- CREATE Wind Calm (with light, WiFi + Remote controller)
 
-This is a template Homebridge dynamic platform plugin and can be used as a base to help you get started developing your own plugin.
+## Contents
 
-This template should be used in conjunction with the [developer documentation](https://developers.homebridge.io/). A full list of all supported service types, and their characteristics is available on this site.
+- [Features](#features)
+- [Requirements](#requirements)
+- [Usage](#usage)
+- [Known issues](#known-issues)
+- [Acknowledgements](#acknowledgements)
+- [Developer documentation](#developer-documentation)
 
-### Clone As Template
+## Features
 
-Click the link below to create a new GitHub Repository using this template, or click the *Use This Template* button above.
+- [x] Support for devices with and without light
+- [x] User-friendly fan speed control via the HomeKit UI slider
+- [x] Local communication, does not require connection to the Tuya IoT cloud
+      platform [^1]
+- [x] Robust communication implementation
+- [x] Changes via physical remote controller and other applications are
+      automatically reflected in HomeKit
+- [ ] Add support for devices with dimmable light
+- [ ] Add support for toggling the beep sound feedback
 
-<span align="center">
+## Requirements
 
-### [Create New Repository From Template](https://github.com/homebridge/homebridge-plugin-template/generate)
+### Getting the local key of the device
 
-</span>
+The TinyTuya project has great step-by-step instructions
+[how to obtain the local key](https://github.com/jasonacox/tinytuya/tree/master?tab=readme-ov-file#setup-wizard---getting-local-keys)
+of a device.
 
-### Setup Development Environment
+In order to obtain the local key of a device, it needs to be paired with the
+Smart Life App or Tuya Smart App. If the device has already been paired with the
+CREATE app, you can reset the device with its remote the following way:
 
-To develop Homebridge plugins you must have Node.js 18 or later installed, and a modern code editor such as [VS Code](https://code.visualstudio.com/). This plugin template uses [TypeScript](https://www.typescriptlang.org/) to make development easier and comes with pre-configured settings for [VS Code](https://code.visualstudio.com/) and ESLint. If you are using VS Code install these extensions:
+1. Power off the fan (i.e. cut the power by turning off its wall switch or with
+   the associated breaker depending on the installation).
+2. Power on the device.
+3. Press and hold the `1h` button on the remote until you hear a beep.
+4. Now the device is ready to be paired again.
 
-- [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint)
+Note from the CREATE app: if you do not hear a beep after 10 seconds, press and
+hold the buttons `1h` and `2h` simultaneously at the same time.
 
-### Install Development Dependencies
+### Fixed IP address
 
-Using a terminal, navigate to the project folder and run this command to install the development dependencies:
+It's strongly recommended to set up a DHCP IP reservation for the device. This
+way the fan will always have a fixed IP address assigned. The TuyAPI library
+used for device communication works reliably when the IP address of the device
+is used alongside with the device ID.
 
-```shell
-npm install
-```
+Note: the device used for the initial plugin development is a CREATE Wind Calm
+purchased in 2025, and it refuses most connection attempts via the TuyAPI when
+the IP address is not supplied (connection requests with ID only).
 
-### Update package.json
+## Usage
 
-Open the [`package.json`](./package.json) and change the following attributes:
+### Installation
 
-- `name` - this should be prefixed with `homebridge-` or `@username/homebridge-`, is case-sensitive, and contains no spaces nor special characters apart from a dash `-`
-- `displayName` - this is the "nice" name displayed in the Homebridge UI
-- `homepage` - link to your GitHub repo's `README.md`
-- `repository.url` - link to your GitHub repo
-- `bugs.url` - link to your GitHub repo issues page
+### Configuration
 
-When you are ready to publish the plugin you should set `private` to false, or remove the attribute entirely.
+By default, one HomeKit tile is exposed in the Home application for a device.
+You can group or ungroup the different accessories of the fan (e.g. the fan
+slider and the light switch) in the group section of the accessory settings
+within the Home app.
 
-### Update Plugin Defaults
+### Setting the rotation speed via the HomeKit slider
 
-Open the [`src/settings.ts`](./src/settings.ts) file and change the default values:
+The following UI slider inputs represent the different speed settings of the
+fan. The fan is turned off when the slider is set to zero.
 
-- `PLATFORM_NAME` - Set this to be the name of your platform. This is the name of the platform that users will use to register the plugin in the Homebridge `config.json`.
-- `PLUGIN_NAME` - Set this to be the same name you set in the [`package.json`](./package.json) file.
+| Device fan speed | Corresponding UI slider value | User input range on the slider |
+| :--------------: | :---------------------------: | :----------------------------: |
+|        1         |              10               |            1 - 19              |
+|        2         |              30               |           20 - 39              |
+|        3         |              50               |           40 - 59              |
+|        4         |              70               |           60 - 79              |
+|        5         |              90               |           80 - 94              |
+|        6         |             100               |           95 - 100             |
 
-Open the [`config.schema.json`](./config.schema.json) file and change the following attribute:
+Whenever the user operates the slider, a so-called debouncing timer is set. When
+the timer expires (without the user changing the slider), the current state of
+the slider value is converted to the nearest value that corresponds to the
+device fan speed. The purpose of the debounce timer is to provide great user
+experience: without the debounce timer, the slider would jump around
+immediately, without waiting for the user to finish adjusting the speed.
 
-- `pluginAlias` - set this to match the `PLATFORM_NAME` you defined in the previous step.
+**Demo:**
 
-See the [Homebridge API docs](https://developers.homebridge.io/#/config-schema#default-values) for more details on the other attributes you can set in the `config.schema.json` file.
+<p align="center">
+  <img src="docs/fan-speed-slider.gif" alt="Fan Speed Slider UI" width="300">
+</p>
 
-### Build Plugin
+### Setting the rotation direction via the HomeKit button
 
-TypeScript needs to be compiled into JavaScript before it can run. The following command will compile the contents of your [`src`](./src) directory and put the resulting code into the `dist` folder.
+The Home app shows a small icon below the fan speed slider representing the
+rotation direction of the fan. The implementation follows the general convention
+that the direction is represented from the perspective when the user looks at
+the fan; i.e. standing below and looking up in the case of a ceiling fan.
 
-```shell
-npm run build
-```
+The counter-clockwise icon in the Home shows that the fan rotates
+counter-clockwise when looked at directly from below. In this mode the fan blows
+air downwards, called the "summer" mode. Changing the direction to clockwise
+rotation makes the fan rotate in the opposite direction, causing the air being
+pushed upwards. This mode is called the "winter" mode.
 
-### Link To Homebridge
+## Known issues
 
-Run this command so your global installation of Homebridge can discover the plugin in your development environment:
+### Color temperature
 
-```shell
-npm link
-```
+It appears that the color temperature of the CREATE Wind Calm ceiling fan
+(purchased in 2025) cannot be set properly. Regardless of using the physical
+remote, the mobile application or manually sending the commands via TinyTuya,
+the device simply cycles through the 3 different color temperatures and it does
+not remember it's previously set state. This issue has also been observed here:
+[https://github.com/velzend/create_ikohs_fan](https://github.com/velzend/create_ikohs_fan)
 
-You can now start Homebridge, use the `-D` flag, so you can see debug log messages in your plugin:
+Therefore, this plugin does not support setting the color temperature until this
+has been fixed by CREATE.
 
-```shell
-homebridge -D
-```
+## Acknowledgements
 
-### Watch For Changes and Build Automatically
+- [TinyTuya](https://github.com/jasonacox/tinytuya)
+- [TuyAPI](https://github.com/codetheweb/tuyapi)
 
-If you want to have your code compile automatically as you make changes, and restart Homebridge automatically between changes, you first need to add your plugin as a platform in `./test/hbConfig/config.json`:
-```
-{
-...
-    "platforms": [
-        {
-            "name": "Config",
-            "port": 8581,
-            "platform": "config"
-        },
-        {
-            "name": "<PLUGIN_NAME>",
-            //... any other options, as listed in config.schema.json ...
-            "platform": "<PLATFORM_NAME>"
-        }
-    ]
-}
-```
+## Developer documentation
 
-and then you can run:
+[https://akospasztor.github.io/homebridge-create-ceiling-fan/](https://akospasztor.github.io/homebridge-create-ceiling-fan/)
 
-```shell
-npm run watch
-```
+<!-- Footnotes -->
 
-This will launch an instance of Homebridge in debug mode which will restart every time you make a change to the source code. It will load the config stored in the default location under `~/.homebridge`. You may need to stop other running instances of Homebridge while using this command to prevent conflicts. You can adjust the Homebridge startup command in the [`nodemon.json`](./nodemon.json) file.
-
-### Customise Plugin
-
-You can now start customising the plugin template to suit your requirements.
-
-- [`src/platform.ts`](./src/platform.ts) - this is where your device setup and discovery should go.
-- [`src/platformAccessory.ts`](./src/platformAccessory.ts) - this is where your accessory control logic should go, you can rename or create multiple instances of this file for each accessory type you need to implement as part of your platform plugin. You can refer to the [developer documentation](https://developers.homebridge.io/) to see what characteristics you need to implement for each service type.
-- [`config.schema.json`](./config.schema.json) - update the config schema to match the config you expect from the user. See the [Plugin Config Schema Documentation](https://developers.homebridge.io/#/config-schema).
-
-### Versioning Your Plugin
-
-Given a version number `MAJOR`.`MINOR`.`PATCH`, such as `1.4.3`, increment the:
-
-1. **MAJOR** version when you make breaking changes to your plugin,
-2. **MINOR** version when you add functionality in a backwards compatible manner, and
-3. **PATCH** version when you make backwards compatible bug fixes.
-
-You can use the `npm version` command to help you with this:
-
-```shell
-# major update / breaking changes
-npm version major
-
-# minor update / new features
-npm version update
-
-# patch / bugfixes
-npm version patch
-```
-
-### Publish Package
-
-When you are ready to publish your plugin to [npm](https://www.npmjs.com/), make sure you have removed the `private` attribute from the [`package.json`](./package.json) file then run:
-
-```shell
-npm publish
-```
-
-If you are publishing a scoped plugin, i.e. `@username/homebridge-xxx` you will need to add `--access=public` to command the first time you publish.
-
-#### Publishing Beta Versions
-
-You can publish *beta* versions of your plugin for other users to test before you release it to everyone.
-
-```shell
-# create a new pre-release version (eg. 2.1.0-beta.1)
-npm version prepatch --preid beta
-
-# publish to @beta
-npm publish --tag beta
-```
-
-Users can then install the  *beta* version by appending `@beta` to the install command, for example:
-
-```shell
-sudo npm install -g homebridge-example-plugin@beta
-```
-
-### Best Practices
-
-Consider creating your plugin with the [Homebridge Verified](https://github.com/homebridge/verified) criteria in mind. This will help you to create a plugin that is easy to use and works well with Homebridge.
-You can then submit your plugin to the Homebridge Verified list for review.
-The most up-to-date criteria can be found [here](https://github.com/homebridge/verified#requirements).
-For reference, the current criteria are:
-
-- **General**
-  - The plugin must be of type [dynamic platform](https://developers.homebridge.io/#/#dynamic-platform-template).
-  - The plugin must not offer the same nor less functionality than that of any existing **verified** plugin.
-- **Repo**
-  - The plugin must be published to NPM and the source code available on a GitHub repository, with issues enabled.
-  - A GitHub release should be created for every new version of your plugin, with release notes.
-- **Environment**
-  - The plugin must run on all [supported LTS versions of Node.js](https://github.com/homebridge/homebridge/wiki/How-To-Update-Node.js), at the time of writing this is Node v18, v20 and v22.
-  - The plugin must successfully install and not start unless it is configured.
-  - The plugin must not execute post-install scripts that modify the users' system in any way.
-  - The plugin must not require the user to run Homebridge in a TTY or with non-standard startup parameters, even for initial configuration.
-- **Codebase**
-  - The plugin must implement the [Homebridge Plugin Settings GUI](https://developers.homebridge.io/#/config-schema).
-  - The plugin must not contain any analytics or calls that enable you to track the user.
-  - If the plugin needs to write files to disk (cache, keys, etc.), it must store them inside the Homebridge storage directory.
-  - The plugin must not throw unhandled exceptions, the plugin must catch and log its own errors.
-
-### Useful Links
-
-Note these links are here for help but are not supported/verified by the Homebridge team
-
-- [Custom Characteristics](https://github.com/homebridge/homebridge-plugin-template/issues/20)
+[^1]: Please note that the Tuya IoT cloud platform registration is still needed
+to obtain the local keys for the device. After obtaining the keys, the device
+can be blocked from accessing the internet.

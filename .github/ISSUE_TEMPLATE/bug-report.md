@@ -1,44 +1,41 @@
 ---
 name: Bug Report
-about: Create a report to help us improve
+about: Create a report for an issue
 title: ''
 labels: bug
 assignees: ''
-
 ---
 
-<!-- You must use the issue template below when submitting a bug -->
+## Description
+<!-- A clear and concise description of what the bug/issue is. -->
 
-**Describe The Bug:**
-<!-- A clear and concise description of what the bug is. -->
-
-**To Reproduce:**
+## How to reproduce
 <!-- Steps to reproduce the behavior. -->
 
-**Expected behavior:**
+## Expected behavior
 <!-- A clear and concise description of what you expected to happen. -->
 
-**Logs:**
+## Logs
 
-```
-Show the Homebridge logs here, remove any sensitive information.
+```text
+Show the Homebridge logs here. Don't forget to remove any sensitive information.
 ```
 
-**Plugin Config:**
+## Plugin configuration
 
 ```json
-Show your Homebridge config.json here, remove any sensitive information.
+Show your Homebridge config.json here. Don't forget to remove any sensitive information.
 ```
 
-**Screenshots:**
+## Screenshots
 <!-- If applicable, add screenshots to help explain your problem. -->
 
-**Environment:**
+## Environment
 
-* **Plugin Version**:
-* **Homebridge Version**: <!-- homebridge -V -->
-* **Node.js Version**: <!-- node -v -->
-* **NPM Version**: <!-- npm -v -->
-* **Operating System**: <!-- Raspbian / Ubuntu / Debian / Windows / macOS / Docker / hb-service -->
+- **Plugin Version**:
+- **Homebridge Version**: <!-- homebridge -V -->
+- **Node.js Version**: <!-- node -v -->
+- **NPM Version**: <!-- npm -v -->
+- **Operating System**: <!-- Raspbian / Ubuntu / Debian / Windows / macOS / Docker / hb-service -->
 
 <!-- Click the "Preview" tab before you submit to ensure the formatting is correct. -->
