@@ -219,7 +219,16 @@ export class CreateCeilingFanAccessory {
       .onSet(this.handleFanRotationDirectionSet.bind(this));
 
     // Note: the light service is only created if the device is configured with the light option
-    if (this.accessory.context.device.hasLight) {
+    if ((this.accessory.context.device.hasLight === false) ||
+      (this.accessory.context.device.hasLight === 'no')) {
+      this.lightService =
+        this.accessory.getService(this.platform.Service.Lightbulb);
+      if (this.lightService) {
+        this.accessory.removeService(this.lightService);
+        this.platform.log.info('Stale light service has been removed');
+      }
+    } else if ((this.accessory.context.device.hasLight === true) ||
+      (this.accessory.context.device.hasLight === 'notDimmable')) {
       // Get the light service if it exists, otherwise create a new service
       this.lightService =
         this.accessory.getService(this.platform.Service.Lightbulb) ||
@@ -233,12 +242,17 @@ export class CreateCeilingFanAccessory {
         .onGet(this.handleLightOnGet.bind(this))
         .onSet(this.handleLightOnSet.bind(this));
     } else {
-      this.lightService =
-        this.accessory.getService(this.platform.Service.Lightbulb);
-      if (this.lightService) {
-        this.accessory.removeService(this.lightService);
-        this.platform.log.info('Stale light service has been removed');
-      }
+      this.platform.log.error(
+        `The "hasLight" configuration value "${this.accessory.context.device.hasLight}" is invalid. ` +
+        'Please check the plugin configuration.');
+    }
+
+    // Throw a warning message about deprecated values
+    if ((this.accessory.context.device.hasLight === true) ||
+      (this.accessory.context.device.hasLight === false)) {
+      this.platform.log.warn(
+        `The "hasLight" configuration value "${this.accessory.context.device.hasLight}" is deprecated. ` +
+        'Please check the plugin configuration.');
     }
 
     // Create the device communicator object

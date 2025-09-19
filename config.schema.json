@@ -43,10 +43,25 @@
             "required": false
           },
           "hasLight": {
-            "title": "Fan with light",
-            "description": "Check this if the fan is equipped with light",
-            "type": "boolean",
-            "required": false
+            "title": "Fan equipped with light",
+            "description": "Select the light option the fan is equipped with",
+            "type": "string",
+            "oneOf": [
+              {
+                "title": "No light",
+                "enum": [
+                  "no"
+                ]
+              },
+              {
+                "title": "With light (not dimmable)",
+                "enum": [
+                  "notDimmable"
+                ]
+              }
+            ],
+            "default": "no",
+            "required": true
           }
         }
       }
