@@ -156,6 +156,7 @@ export class CreateCeilingFanAccessory {
   private readonly getDeviceStatusPeriod: number = 10000;
   private readonly getDeviceStatusConnectTimeout: number = 3000;
   private readonly getDeviceStatusReadTimeout: number = 1000;
+  private readonly setDeviceStatusTimeout: number = 2500;
 
   private readonly fanRotationSpeedNormalized: readonly number[] = [10, 30, 50, 70, 90, 100];
 
@@ -299,7 +300,7 @@ export class CreateCeilingFanAccessory {
    */
   async handleFanActiveStateSet(value: CharacteristicValue) {
     this.platform.log.debug('Set Fan Active:', value);
-    await this.setDeviceValue(60, (value === this.platform.Characteristic.Active.ACTIVE) ? true : false);
+    await this.setDeviceValueWithTimeout(60, (value === this.platform.Characteristic.Active.ACTIVE) ? true : false);
   }
 
   /**
@@ -336,7 +337,7 @@ export class CreateCeilingFanAccessory {
       this.fanSetSpeedDebounceTimer = setTimeout(async () => {
         const dpsRotationSpeed = this.fanRotationSpeedNormalized.indexOf(adjustedValue) + 1;
         this.platform.log.debug('Set RotationSpeed debounced, setting DPS value:', dpsRotationSpeed);
-        await this.setDeviceValue(62, dpsRotationSpeed);
+        await this.setDeviceValueWithTimeout(62, dpsRotationSpeed);
       }, this.fanSetSpeedDebouncePeriod);
     }
   }
@@ -360,9 +361,8 @@ export class CreateCeilingFanAccessory {
   async handleFanRotationDirectionSet(value: CharacteristicValue) {
     this.platform.log.debug('Set Fan RotationDirection:',
       (value === this.platform.Characteristic.RotationDirection.COUNTER_CLOCKWISE) ? 'COUNTER_CLOCKWISE' : 'CLOCKWISE');
-    await this.setDeviceValue(63,
-      (value === this.platform.Characteristic.RotationDirection.COUNTER_CLOCKWISE) ? 'forward' : 'reverse',
-    );
+    await this.setDeviceValueWithTimeout(63,
+      (value === this.platform.Characteristic.RotationDirection.COUNTER_CLOCKWISE) ? 'forward' : 'reverse');
   }
 
   /**
@@ -383,7 +383,7 @@ export class CreateCeilingFanAccessory {
    */
   async handleLightOnSet(value: CharacteristicValue) {
     this.platform.log.debug('Set Light On:', value);
-    await this.setDeviceValue(20, value as boolean);
+    await this.setDeviceValueWithTimeout(20, value as boolean);
   }
 
   /**
@@ -484,6 +484,29 @@ export class CreateCeilingFanAccessory {
     }
 
     this.platform.log.debug('[setDeviceStatus] --- Done');
+  }
+
+  /**
+   * Set device value with timeout.
+   *
+   * This is a simple wrapper for the {@link setDeviceValue} method with a
+   * timeout mechanism. If the method fails to execute within the
+   * {@link setDeviceStatusTimeout} timeout, it throws a HomeKit No Response
+   * status.
+   *
+   * @param dps   The data point index of the device to be set.
+   * @param value The value to be set.
+   */
+  private async setDeviceValueWithTimeout(dps: number, value: string | number | boolean) {
+    try {
+      await this.waitForPromiseWithTimeout(
+        this.setDeviceValue(dps, value),
+        this.setDeviceStatusTimeout);
+    } catch (error) {
+      this.platform.log.debug('  *', error);
+      throw new this.platform.api.hap.HapStatusError(
+        this.platform.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE);
+    }
   }
 
   /**
