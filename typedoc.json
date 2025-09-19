@@ -1,0 +1,32 @@
+{
+  "entryPointStrategy": "expand",
+  "entryPoints": [
+    "src"
+  ],
+  "projectDocuments": [
+    "README.md",
+    "CHANGELOG.md"
+  ],
+  "navigationLinks": {
+    "GitHub": "https://github.com/akospasztor/homebridge-create-ceiling-fan"
+  },
+  "sidebarLinks": {
+    "GitHub": "https://github.com/akospasztor/homebridge-create-ceiling-fan"
+  },
+  "hostedBaseUrl": "https://akospasztor.github.io/homebridge-create-ceiling-fan",
+  "useFirstParagraphOfCommentAsSummary": true,
+  "includeVersion": true,
+  "excludePrivate": false,
+  "excludeProtected": false,
+  "excludeInternal": true,
+  "hideGenerator": true,
+  "visibilityFilters": {
+    "protected": true,
+    "private": true,
+    "inherited": true,
+    "external": true
+  },
+  "out": "docs/html",
+  "theme": "default",
+  "tsconfig": "tsconfig.json"
+}
