@@ -1,36 +1,49 @@
 {
-  "name": "homebridge-plugin-name",
-  "displayName": "Plugin Name",
+  "name": "@akospasztor/homebridge-create-ceiling-fan",
+  "displayName": "Homebridge Create Ceiling Fan",
   "type": "module",
   "version": "1.0.0",
-  "private": true,
-  "description": "A short description about what your plugin does.",
-  "author": "Your Name",
+  "private": false,
+  "description": "Homebridge plugin for CREATE ceiling fans",
+  "author": "Akos Pasztor",
   "license": "Apache-2.0",
-  "homepage": "https://github.com/USERNAME/GITHUB_PROJECT_NAME#readme",
+  "homepage": "https://github.com/akospasztor/homebridge-create-ceiling-fan#readme",
   "repository": {
     "type": "git",
-    "url": "https://github.com/USERNAME/GITHUB_PROJECT_NAME.git"
+    "url": "git+https://github.com/akospasztor/homebridge-create-ceiling-fan.git"
   },
   "bugs": {
-    "url": "https://github.com/USERNAME/GITHUB_PROJECT_NAME/issues"
+    "url": "https://github.com/akospasztor/homebridge-create-ceiling-fan/issues"
   },
   "keywords": [
-    "homebridge-plugin"
+    "homebridge-plugin",
+    "ceiling fan",
+    "fan",
+    "create",
+    "wind calm",
+    "windcalm",
+    "tuya"
   ],
   "main": "dist/index.js",
+  "files": [
+    "dist",
+    "docs",
+    "config.schema.json",
+    "CHANGELOG.md"
+  ],
   "engines": {
     "node": "^18.20.4 || ^20.18.0 || ^22.10.0",
     "homebridge": "^1.8.0 || ^2.0.0-beta.0"
   },
   "scripts": {
     "build": "rimraf ./dist && tsc",
+    "docs": "typedoc",
     "lint": "eslint . --max-warnings=0",
     "prepublishOnly": "npm run lint && npm run build",
     "watch": "npm run build && npm link && nodemon"
   },
   "dependencies": {
-    "homebridge-lib": "^7.1.4"
+    "tuyapi": "^7.7.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.21.0",
@@ -40,6 +53,7 @@
     "nodemon": "^3.1.9",
     "rimraf": "^6.0.1",
     "ts-node": "^10.9.2",
+    "typedoc": "^0.28.7",
     "typescript": "^5.7.3",
     "typescript-eslint": "^8.24.1"
   }

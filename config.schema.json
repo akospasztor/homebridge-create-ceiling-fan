@@ -1,16 +1,54 @@
 {
-  "pluginAlias": "ExampleHomebridgePlugin",
+  "pluginAlias": "CreateCeilingFanPlatform",
   "pluginType": "platform",
   "singular": true,
-  "strictValidation": false,
+  "strictValidation": true,
   "schema": {
-    "type": "object",
-    "properties": {
-      "name": {
-        "title": "Name",
-        "type": "string",
-        "required": true,
-        "default": "Example Dynamic Platform"
+    "devices": {
+      "type": "array",
+      "title": "Devices",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "title": "Name",
+            "description": "The accessory name that is displayed in the Home app",
+            "type": "string",
+            "default": "Ceiling Fan",
+            "required": true
+          },
+          "id": {
+            "title": "Device ID",
+            "description": "Device ID retrieved from the Tuya IoT Cloud Platform",
+            "type": "string",
+            "required": true
+          },
+          "key": {
+            "title": "Device key",
+            "description": "Local key of the device retrieved with tinytuya",
+            "type": "string",
+            "required": true
+          },
+          "ip": {
+            "title": "IP address",
+            "description": "IP address of the device (optional, but recommended to reserve a static address for this device on your LAN for better performance)",
+            "type": "string",
+            "required": true
+          },
+          "protocolVersion": {
+            "title": "Protocol version",
+            "description": "Tuya device protocol version",
+            "type": "string",
+            "default": "3.5",
+            "required": false
+          },
+          "hasLight": {
+            "title": "Fan with light",
+            "description": "Check this if the fan is equipped with light",
+            "type": "boolean",
+            "required": false
+          }
+        }
       }
     }
   }
