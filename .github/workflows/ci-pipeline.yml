@@ -68,10 +68,9 @@ jobs:
         uses: actions/deploy-pages@v4
   publish_release:
     needs:
-      - deploy_pages
-    if: >
-      (startsWith(github.ref, 'refs/tags/') && contains(github.ref, '.')) &&
-      (needs.deploy_pages.result == 'success' || needs.deploy_pages.result == 'skipped')
+      - build
+      - documentation
+    if: (startsWith(github.ref, 'refs/tags/') && contains(github.ref, '.'))
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
