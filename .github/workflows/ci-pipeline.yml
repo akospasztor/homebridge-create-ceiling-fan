@@ -52,7 +52,7 @@ jobs:
     needs:
       - build
       - documentation
-    if: ${{ github.ref == 'refs/heads/master' }}
+    if: (github.ref == 'refs/heads/master')
     concurrency:
       group: deploy-pages
       cancel-in-progress: false
@@ -70,10 +70,8 @@ jobs:
     needs:
       - deploy_pages
     if: >
-      ${{
-        (startsWith(github.ref, 'refs/tags/') && contains(github.ref, '.')) &&
-        (needs.deploy_pages.result == 'success' || needs.deploy_pages.result == 'skipped')
-      }}
+      (startsWith(github.ref, 'refs/tags/') && contains(github.ref, '.')) &&
+      (needs.deploy_pages.result == 'success' || needs.deploy_pages.result == 'skipped')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
