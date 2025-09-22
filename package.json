@@ -2,7 +2,7 @@
   "name": "@akospasztor/homebridge-create-ceiling-fan",
   "displayName": "Homebridge Create Ceiling Fan",
   "type": "module",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "private": false,
   "description": "Homebridge plugin for CREATE ceiling fans",
   "author": "Akos Pasztor",
