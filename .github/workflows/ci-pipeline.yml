@@ -82,4 +82,4 @@ jobs:
       - name: Set registry parameters
         run: npm set "//registry.npmjs.org/:_authToken=${{ secrets.NPM_ACCESS_TOKEN }}"
       - name: Publish package
-        run: npm publish --access=public
+        run: npm publish --access public

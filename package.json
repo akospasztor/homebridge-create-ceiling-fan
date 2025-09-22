@@ -17,6 +17,7 @@
   },
   "keywords": [
     "homebridge-plugin",
+    "homebridge",
     "ceiling fan",
     "fan",
     "create",
@@ -31,6 +32,9 @@
     "config.schema.json",
     "CHANGELOG.md"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "engines": {
     "node": "^18.20.4 || ^20.18.0 || ^22.10.0",
     "homebridge": "^1.8.0 || ^2.0.0-beta.0"
