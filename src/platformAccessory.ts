@@ -266,7 +266,7 @@ export class CreateCeilingFanAccessory {
     });
 
     this.deviceCommunicator.on('error', (error: Error) => {
-      this.platform.log.info('Error during device communication:', error);
+      this.logCommunicationError('Error during device communication:', error);
     });
 
     // Create the mutex to prevent concurrent communication with the device
@@ -435,7 +435,7 @@ export class CreateCeilingFanAccessory {
         this.state.isValid = true;
         this.updateAccessoryState();
       } catch (error) {
-        this.platform.log.info('  *', error);
+        this.logCommunicationError('  *', error);
         this.deviceCommunicator.disconnect();
         this.state.isValid = false;
         isCommunicationError = true;
@@ -636,6 +636,27 @@ export class CreateCeilingFanAccessory {
       return this.fanRotationSpeedNormalized[4];
     } else {
       return this.fanRotationSpeedNormalized[5];
+    }
+  }
+
+  /**
+   * Wrapper function to log device communication errors depending on the device
+   * configuration.
+   *
+   * By default, the device communication errors are logged as debug logs, and
+   * they are only visible if the Homebridge Debug Mode is enabled. If the
+   * corresponding setting is set in the device configuration, the communication
+   * errors are logged as info messages and they are visible in the Homebridge
+   * log regardless whether the Homebridge Debug Mode is enabled.
+   *
+   * @param message     Message to be logged; analogous to the Logger interface.
+   * @param parameters  Additional arguments; analogous to the Logger interface.
+   */
+  private logCommunicationError(message: string, ...parameters: unknown[]) {
+    if (this.accessory.context.device.logCommunicationError === true) {
+      this.platform.log.info(message, ...parameters);
+    } else {
+      this.platform.log.debug(message, ...parameters);
     }
   }
 }
