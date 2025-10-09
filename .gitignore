@@ -2,5 +2,5 @@
 dist
 docs/html
 node_modules
-test/hbConfig
+# test/hbConfig
 *.tgz
