@@ -15,7 +15,8 @@
           "key": "****************",
           "ip": "10.2.1.52",
           "protocolVersion": "3.5",
-          "hasLight": "notDimmable"
+          "hasLight": "notDimmable",
+          "logCommunicationError": false
         }
       ]
     }

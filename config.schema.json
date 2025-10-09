@@ -62,6 +62,12 @@
             ],
             "default": "no",
             "required": true
+          },
+          "logCommunicationError": {
+            "title": "Log communication errors",
+            "description": "If checked: log device communication errors are logged regardless whether Homebridge Debug Mode is enabled",
+            "type": "boolean",
+            "required": false
           }
         }
       }
