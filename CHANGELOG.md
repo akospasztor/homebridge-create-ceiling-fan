@@ -7,6 +7,7 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - Improve reliability of device communication by re-creating communicator object
   after failed tries
+- CI: Use trusted publishing with OIDC
 
 ## 1.3.0 (2025-10-09)
 
