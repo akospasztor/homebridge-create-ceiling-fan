@@ -147,7 +147,9 @@ export class CreateCeilingFanAccessory {
   private getDeviceStatusTimer: NodeJS.Timeout;
   private fanSetSpeedDebounceTimer: NodeJS.Timeout | null = null;
 
-  private deviceCommunicator: TuyAPI;
+  private deviceCommunicator!: TuyAPI;
+  private deviceCommunicationErrorCounter: number = 0;
+  private readonly deviceCommunicationMaxErrors: number = 3;
   private mutex: Mutex;
   private isGetStatusInProgress: boolean = false;
 
@@ -256,18 +258,8 @@ export class CreateCeilingFanAccessory {
         'Please check the plugin configuration.');
     }
 
-    // Create the device communicator object
-    this.deviceCommunicator = new TuyAPI({
-      id: this.accessory.context.device.id,
-      key: this.accessory.context.device.key,
-      ip: this.accessory.context.device.ip,
-      version: this.accessory.context.device.protocolVersion,
-      issueGetOnConnect: false,
-    });
-
-    this.deviceCommunicator.on('error', (error: Error) => {
-      this.logCommunicationError('Error during device communication:', error);
-    });
+    // Initialize the device communicator object
+    this.initializeDeviceCommunicator();
 
     // Create the mutex to prevent concurrent communication with the device
     this.mutex = new Mutex();
@@ -437,6 +429,7 @@ export class CreateCeilingFanAccessory {
       } catch (error) {
         this.logCommunicationError('  *', error);
         this.deviceCommunicator.disconnect();
+        this.handleDeviceCommunicationError();
         this.state.isValid = false;
         isCommunicationError = true;
       } finally {
@@ -478,6 +471,7 @@ export class CreateCeilingFanAccessory {
     } catch (error) {
       this.platform.log.debug('  *', error);
       this.deviceCommunicator.disconnect();
+      this.handleDeviceCommunicationError();
     } finally {
       releaseMutex();
       this.platform.log.debug('  * Mutex unlocked after sending');
@@ -657,6 +651,56 @@ export class CreateCeilingFanAccessory {
       this.platform.log.info(message, ...parameters);
     } else {
       this.platform.log.debug(message, ...parameters);
+    }
+  }
+
+  /**
+   * Helper function to create the device communicator object
+   *
+   * This method creates a new TuyAPI object with the required connection
+   * parameters of the device.
+   */
+  private initializeDeviceCommunicator() {
+    // Create a new device communicator object
+    this.deviceCommunicator = new TuyAPI({
+      id: this.accessory.context.device.id,
+      key: this.accessory.context.device.key,
+      ip: this.accessory.context.device.ip,
+      version: this.accessory.context.device.protocolVersion,
+      issueGetOnConnect: false,
+    });
+
+    this.deviceCommunicator.on('error', (error: Error) => {
+      this.logCommunicationError('Error during device communication:', error);
+    });
+  }
+
+  /**
+   * Helper function to handle device communication errors
+   *
+   * This method is called after a failed communication with the device. When
+   * called, the method increases the error counter and checks if it reaches
+   * a pre-defined limit. If yes, the method re-creates the device communicator
+   * object.
+   *
+   * The device sometimes gets into a state where it refuses every connection
+   * and communication request and it does not seem to recover after repeated
+   * attempts. After manually restarting Homebridge, the communication issue
+   * disappears and the device starts responding again without any external
+   * intervention (e.g. power-cycling the device). Forcing to recreate the
+   * communication object results in recreating the network socket being used
+   * for communication; which resolves the communication issue.
+   */
+  private handleDeviceCommunicationError() {
+    // Increase the error counter
+    this.deviceCommunicationErrorCounter++;
+
+    // Create a new device communicator object if needed
+    if (this.deviceCommunicationErrorCounter >= this.deviceCommunicationMaxErrors) {
+      this.initializeDeviceCommunicator();
+      this.deviceCommunicationErrorCounter = 0;
+      this.logCommunicationError(
+        'Too many device communication errors; new device communicator object has been created');
     }
   }
 }
