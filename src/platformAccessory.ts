@@ -157,7 +157,7 @@ export class CreateCeilingFanAccessory {
   private readonly getDeviceStatusFastRetryPeriod: number = 1000;
   private readonly getDeviceStatusPeriod: number = 10000;
   private readonly getDeviceStatusConnectTimeout: number = 3000;
-  private readonly getDeviceStatusReadTimeout: number = 1000;
+  private readonly getDeviceStatusReadTimeout: number = 2000;
   private readonly setDeviceStatusTimeout: number = 2500;
 
   private readonly fanRotationSpeedNormalized: readonly number[] = [10, 30, 50, 70, 90, 100];
