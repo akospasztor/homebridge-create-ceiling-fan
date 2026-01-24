@@ -147,9 +147,6 @@ export class CreateCeilingFanAccessory {
   private getDeviceStatusTimer: NodeJS.Timeout;
   private fanSetSpeedDebounceTimer: NodeJS.Timeout | null = null;
 
-  private deviceCommunicator!: TuyAPI;
-  private deviceCommunicationErrorCounter: number = 0;
-  private readonly deviceCommunicationMaxErrors: number = 3;
   private mutex: Mutex;
   private isGetStatusInProgress: boolean = false;
 
@@ -257,9 +254,6 @@ export class CreateCeilingFanAccessory {
         `The "hasLight" configuration value "${this.accessory.context.device.hasLight}" is deprecated. ` +
         'Please check the plugin configuration.');
     }
-
-    // Initialize the device communicator object
-    this.initializeDeviceCommunicator();
 
     // Create the mutex to prevent concurrent communication with the device
     this.mutex = new Mutex();
@@ -417,23 +411,23 @@ export class CreateCeilingFanAccessory {
       const releaseMutex = await this.mutex.lock();
       this.platform.log.debug('  * Mutex granted for reading, connecting to device...');
 
+      const deviceCommunicator = this.initializeDeviceCommunicator();
       try {
-        await this.waitForPromiseWithTimeout(this.deviceCommunicator.connect(), this.getDeviceStatusConnectTimeout);
+        await this.waitForPromiseWithTimeout(deviceCommunicator.connect(), this.getDeviceStatusConnectTimeout);
         this.platform.log.debug('  * Device connected, reading...');
         const status = await this.waitForPromiseWithTimeout(
-          this.deviceCommunicator.get({ schema: true }), this.getDeviceStatusReadTimeout) as DPSObject;
+          deviceCommunicator.get({ schema: true }), this.getDeviceStatusReadTimeout) as DPSObject;
         this.platform.log.debug('  * Status:', status);
         this.updateDeviceState(status);
         this.state.isValid = true;
         this.updateAccessoryState();
       } catch (error) {
         this.logCommunicationError('  *', error);
-        this.deviceCommunicator.disconnect();
-        this.handleDeviceCommunicationError();
         this.state.isValid = false;
         isCommunicationError = true;
       } finally {
         this.isGetStatusInProgress = false;
+        deviceCommunicator.disconnect();
         releaseMutex();
         this.platform.log.debug('  * Mutex unlocked after reading');
       }
@@ -463,16 +457,16 @@ export class CreateCeilingFanAccessory {
     const releaseMutex = await this.mutex.lock();
     this.platform.log.debug('  * Mutex granted for sending, connecting to device...');
 
+    const deviceCommunicator = this.initializeDeviceCommunicator();
     try {
-      await this.deviceCommunicator.connect();
+      await deviceCommunicator.connect();
       this.platform.log.debug('  * Device connected, sending...');
-      const status = await this.deviceCommunicator.set({ dps: dps, set: value }) as DPSObject;
+      const status = await deviceCommunicator.set({ dps: dps, set: value }) as DPSObject;
       this.platform.log.debug('  * Status:', status);
     } catch (error) {
       this.platform.log.debug('  *', error);
-      this.deviceCommunicator.disconnect();
-      this.handleDeviceCommunicationError();
     } finally {
+      deviceCommunicator.disconnect();
       releaseMutex();
       this.platform.log.debug('  * Mutex unlocked after sending');
     }
@@ -659,48 +653,18 @@ export class CreateCeilingFanAccessory {
    *
    * This method creates a new TuyAPI object with the required connection
    * parameters of the device.
+   *
+   * @return The created device communicator object.
    */
-  private initializeDeviceCommunicator() {
+  private initializeDeviceCommunicator(): TuyAPI {
     // Create a new device communicator object
-    this.deviceCommunicator = new TuyAPI({
+    return new TuyAPI({
       id: this.accessory.context.device.id,
       key: this.accessory.context.device.key,
       ip: this.accessory.context.device.ip,
       version: this.accessory.context.device.protocolVersion,
       issueGetOnConnect: false,
     });
-
-    this.deviceCommunicator.on('error', (error: Error) => {
-      this.logCommunicationError('Error during device communication:', error);
-    });
   }
 
-  /**
-   * Helper function to handle device communication errors
-   *
-   * This method is called after a failed communication with the device. When
-   * called, the method increases the error counter and checks if it reaches
-   * a pre-defined limit. If yes, the method re-creates the device communicator
-   * object.
-   *
-   * The device sometimes gets into a state where it refuses every connection
-   * and communication request and it does not seem to recover after repeated
-   * attempts. After manually restarting Homebridge, the communication issue
-   * disappears and the device starts responding again without any external
-   * intervention (e.g. power-cycling the device). Forcing to recreate the
-   * communication object results in recreating the network socket being used
-   * for communication; which resolves the communication issue.
-   */
-  private handleDeviceCommunicationError() {
-    // Increase the error counter
-    this.deviceCommunicationErrorCounter++;
-
-    // Create a new device communicator object if needed
-    if (this.deviceCommunicationErrorCounter >= this.deviceCommunicationMaxErrors) {
-      this.initializeDeviceCommunicator();
-      this.deviceCommunicationErrorCounter = 0;
-      this.logCommunicationError(
-        'Too many device communication errors; new device communicator object has been created');
-    }
-  }
 }
