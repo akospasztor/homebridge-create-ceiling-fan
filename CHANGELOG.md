@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file. This
 project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 1.4.0 (2026-01-24)
+
+- Improve communication with the device by creating the device communicator
+  object only when needed
+- Increase status read timeout to 2s
+
 ## 1.3.1 (2025-10-27)
 
 - Improve reliability of device communication by re-creating communicator object
