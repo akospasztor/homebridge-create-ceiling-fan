@@ -427,7 +427,7 @@ export class CreateCeilingFanAccessory {
         isCommunicationError = true;
       } finally {
         this.isGetStatusInProgress = false;
-        deviceCommunicator.disconnect();
+        this.forceDisconnect(deviceCommunicator);
         releaseMutex();
         this.platform.log.debug('  * Mutex unlocked after reading');
       }
@@ -466,7 +466,7 @@ export class CreateCeilingFanAccessory {
     } catch (error) {
       this.platform.log.debug('  *', error);
     } finally {
-      deviceCommunicator.disconnect();
+      this.forceDisconnect(deviceCommunicator);
       releaseMutex();
       this.platform.log.debug('  * Mutex unlocked after sending');
     }
@@ -676,6 +676,31 @@ export class CreateCeilingFanAccessory {
     });
 
     return deviceCommunicator;
+  }
+
+  /**
+   * Disconnect the device communicator and forcibly destroy the underlying
+   * socket.
+   *
+   * TuyAPI's own `disconnect()` is a no-op while a connection attempt is still
+   * in progress (it bails out when `_connected` is `false`). When our local
+   * timeout fires before tuyapi's internal one, the socket would otherwise be
+   * left open and fire an error a few seconds later, crashing the plugin.
+   * Destroying the underlying socket here ensures the abandoned communicator is
+   * cleaned up immediately.
+   *
+   * @param deviceCommunicator The device communicator to disconnect.
+   */
+  private forceDisconnect(deviceCommunicator: TuyAPI) {
+    deviceCommunicator.disconnect();
+
+    // The `client` socket is not in TuyAPI's public types, so we cast through
+    // `unknown` to a minimal inline type. Optional chaining is used so that if
+    // a future TuyAPI version renames or removes the field, or if the socket
+    // was never created, we simply skip the call instead of throwing a
+    // `TypeError`.
+    const client = (deviceCommunicator as unknown as { client?: { destroy(): void } }).client;
+    client?.destroy();
   }
 
 }
