@@ -658,13 +658,24 @@ export class CreateCeilingFanAccessory {
    */
   private initializeDeviceCommunicator(): TuyAPI {
     // Create a new device communicator object
-    return new TuyAPI({
+    const deviceCommunicator = new TuyAPI({
       id: this.accessory.context.device.id,
       key: this.accessory.context.device.key,
       ip: this.accessory.context.device.ip,
       version: this.accessory.context.device.protocolVersion,
       issueGetOnConnect: false,
     });
+
+    // Register an 'error' listener on the EventEmitter to prevent uncaught
+    // exceptions: TuyAPI extends EventEmitter and emits 'error' events on
+    // connection timeouts and socket errors. If no listener is attached,
+    // Node's EventEmitter rethrows them as uncaught exceptions that crash the
+    // Homebridge process.
+    deviceCommunicator.on('error', (error: Error) => {
+      this.logCommunicationError('Error during device communication:', error);
+    });
+
+    return deviceCommunicator;
   }
 
 }
