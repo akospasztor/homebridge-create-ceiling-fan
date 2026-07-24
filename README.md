@@ -17,6 +17,9 @@ via the physical remote automatically in HomeKit.
 
 - CREATE Wind Calm (with light, WiFi + Remote controller)
 
+The package is published here:
+[https://www.npmjs.com/package/@akospasztor/homebridge-create-ceiling-fan](https://www.npmjs.com/package/@akospasztor/homebridge-create-ceiling-fan)
+
 ## Contents
 
 - [Features](#features)
