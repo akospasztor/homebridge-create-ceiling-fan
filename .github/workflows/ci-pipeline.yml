@@ -18,7 +18,7 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
       - name: Install dependencies
-        run: npm install
+        run: npm ci --ignore-scripts
       - name: Lint the project
         run: npm run lint
       - name: Build the project
@@ -40,7 +40,7 @@ jobs:
         with:
           node-version: lts/*
       - name: Install dependencies
-        run: npm install
+        run: npm ci --ignore-scripts
       - name: Generate documentation
         run: npm run docs
       - name: Upload generated documentation as github-pages artifact
@@ -86,6 +86,6 @@ jobs:
       - name: Update npm  # Ensure latest npm is installed for OIDC support
         run: npm install -g npm@latest
       - name: Install dependencies
-        run: npm install
+        run: npm ci --ignore-scripts
       - name: Publish package
         run: npm publish --access public
